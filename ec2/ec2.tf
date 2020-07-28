@@ -1,5 +1,5 @@
-resource "aws_security_group" "kubernetes-server-instance-sg" {
-  name        = "kubernetes-server-instance-sg"
+resource "aws_security_group" "node-sg" {
+  name        = "node-sg"
   description = "kubectl_instance_sg"
   vpc_id      = var.vpc_id
 
@@ -18,17 +18,27 @@ resource "aws_security_group" "kubernetes-server-instance-sg" {
   }
 
   tags = {
-    Name = "kubectl_server-SG"
+    Name = "node-security-group"
   }
 }
 
-resource "aws_instance" "kubernetes-server" {
-  count                  = length(var.k8-subnet)
+resource "tls_private_key" "this" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
+resource "aws_key_pair" "this" {
+  key_name   = "deployer-key"
+  public_key = "tls_private_key.this.public_key_openssh"
+}
+
+resource "aws_instance" "node" {
+  count                  = length(var.nodes_subnet)
   instance_type          = var.instance_type
   ami                    = var.instance_ami
-  key_name               = var.instance_key
-  subnet_id              = element(var.k8-subnet, count.index)
-  vpc_security_group_ids = [aws_security_group.kubernetes-server-instance-sg.id]
+  key_name               = aws_key_pair.this.key_name
+  subnet_id              = element(var.nodes_subnet, count.index)
+  vpc_security_group_ids = [aws_security_group.node-sg.id]
 
   root_block_device {
     volume_type           = "gp2"
@@ -37,6 +47,6 @@ resource "aws_instance" "kubernetes-server" {
   }
 
   tags = {
-    Name = var.server-name
+    Name = var.server_name
   }
 }

@@ -1,6 +1,6 @@
 variable "profile" {
   description = "AWS User account Profile"
-  default = "staging"
+  default     = "staging"
 }
 
 variable "region" {
@@ -21,5 +21,5 @@ variable "public_subnet_cidr" {
 
 variable "vpc_name" {
   description = "VPC name"
-  default     = "BTPN-VPC"
+  default     = "Demo-VPC"
 }
