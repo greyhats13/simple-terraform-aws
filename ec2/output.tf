@@ -3,11 +3,11 @@ output "nodes_sg" {
 }
 
 output "ami" {
-  value = aws_instance.node.*.ami
+  value = aws_instance.node.ami
 }
 
 output "private_ip" {
-  value = [aws_instance.node.*.private_ip]
+  value = aws_instance.node.private_ip
 }
 
 output "key_id" {

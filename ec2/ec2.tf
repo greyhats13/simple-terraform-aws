@@ -33,11 +33,10 @@ resource "aws_key_pair" "this" {
 }
 
 resource "aws_instance" "node" {
-  count                  = length(var.nodes_subnet)
   instance_type          = var.instance_type
   ami                    = var.instance_ami
   key_name               = aws_key_pair.this.key_name
-  subnet_id              = element(var.nodes_subnet, count.index)
+  subnet_id              = var.nodes_subnet
   vpc_security_group_ids = [aws_security_group.node-sg.id]
 
   root_block_device {

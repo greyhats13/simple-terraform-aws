@@ -12,11 +12,11 @@ variable "vpc-cidr-block" {
 }
 
 variable "nodes_subnet_cidr" {
-  default = [\"10.43.192.128/28\", \"10.43.192.144/28\", \"10.43.192.160/28\"]
+  default = "10.43.192.128/28"
 }
 
 variable "public_subnet_cidr" {
-  default = [\"10.43.192.176/28\", \"10.43.192.192/28\", \"10.43.192.208/28\"]
+  default = "10.43.192.144/28"
 }
 
 variable "vpc_name" {

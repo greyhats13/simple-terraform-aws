@@ -11,7 +11,7 @@ variable "instance_ami" {
 }
 
 variable "nodes_subnet" {
-  type = list(string)
+  type = string
 }
 
 variable "server_name" {

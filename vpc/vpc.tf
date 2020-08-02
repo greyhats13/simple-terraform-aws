@@ -1,6 +1,3 @@
-data "aws_availability_zones" "available" {}
-
-# VPC
 resource "aws_vpc" "this" {
   cidr_block            = var.vpc-cidr-block
 
@@ -14,25 +11,23 @@ resource "aws_vpc" "this" {
 
 #Node Subnet
 resource "aws_subnet" "nodes_subnet" {
-  count             = length(var.nodes_subnet_cidr)
   vpc_id            = aws_vpc.this.id
-  cidr_block        = element(var.nodes_subnet_cidr, count.index)
-  availability_zone = element(data.aws_availability_zones.available.names, count.index)
+  cidr_block        = var.nodes_subnet_cidr
+  availability_zone = "us-east-2a"
 
   tags = {
-    Name = "nodes-subnet-${element(data.aws_availability_zones.available.names, count.index)}"
+    Name = "nodes-subnet-us-east-2a"
   }
 }
 
 #Public Subnet
 resource "aws_subnet" "public_subnet" {
-  count             = length(var.public_subnet_cidr)
   vpc_id            =  aws_vpc.this.id
-  cidr_block        = element(var.public_subnet_cidr, count.index)
-  availability_zone = element(data.aws_availability_zones.available.names, count.index)
+  cidr_block        = var.public_subnet_cidr
+  availability_zone = "us-east-2a"
 
   tags = {
-    Name = "public-subnet-${element(data.aws_availability_zones.available.names, count.index)}"
+    Name = "public-subnet-us-east-2a"
   }
 }
 
@@ -47,7 +42,7 @@ resource "aws_internet_gateway" "igw" {
 }
 
 resource "aws_eip" "eip" {
-  count = 3
+  count = 1
   vpc = true
 
   tags = {
@@ -57,12 +52,11 @@ resource "aws_eip" "eip" {
 
 # Nat Gateway allocated to elastic ip's
 resource "aws_nat_gateway" "nat-gw" {
-  count         = length(aws_subnet.public_subnet)
-  allocation_id = element(aws_eip.eip.*.id, count.index)
-  subnet_id     = element(aws_subnet.public_subnet.*.id, count.index)
+  allocation_id = aws_eip.eip.id, count.index)
+  subnet_id     = aws_subnet.public_subnet.id
 
   tags = {
-    Name = "NAT-${element(data.aws_availability_zones.available.names, count.index)}"
+    Name = "NAT-us-east-2a"
   }
 }
 
@@ -82,26 +76,23 @@ resource "aws_route_table" "public-rt" {
 
 #Nodes Route Table
 resource "aws_route_table" "node-rt" {
-  count  = length(var.nodes_subnet_cidr)
   vpc_id = aws_vpc.this.id
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = element(aws_nat_gateway.nat-gw.*.id, count.index)
+    gateway_id = aws_nat_gateway.nat-gw.id
   }
 
   tags = {
-    Name = "Nodes-RT-${element(data.aws_availability_zones.available.names, count.index)}"
+    Name = "Nodes-RT-us-east-2a"
   }
 }
 
 resource "aws_route_table_association" "public_route_assc" {
-  count          = length(aws_subnet.public_subnet)
   subnet_id      = element(aws_subnet.public_subnet.*.id, count.index)
   route_table_id = aws_route_table.public-rt.id
 }
 
 resource "aws_route_table_association" "node_route_assc" {
-  count          = length(aws_subnet.nodes_subnet)
-  subnet_id      = element(aws_subnet.nodes_subnet.*.id, count.index)
-  route_table_id = element(aws_route_table.node-rt.*.id, count.index)
+  subnet_id      = aws_subnet.nodes_subnet.id
+  route_table_id = aws_route_table.node-rt.id
 }
