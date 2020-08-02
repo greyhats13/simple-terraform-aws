@@ -3,5 +3,5 @@ variable "profile" {
   default = "staging"
 }
 variable "region" {
-  default = "us-east-2"
+  default = "ap-southeast-1"
 }
