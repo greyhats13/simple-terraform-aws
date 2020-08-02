@@ -42,7 +42,6 @@ resource "aws_internet_gateway" "igw" {
 }
 
 resource "aws_eip" "eip" {
-  count = 1
   vpc = true
 
   tags = {
@@ -52,7 +51,7 @@ resource "aws_eip" "eip" {
 
 # Nat Gateway allocated to elastic ip's
 resource "aws_nat_gateway" "nat-gw" {
-  allocation_id = aws_eip.eip.id, count.index)
+  allocation_id = aws_eip.eip.id
   subnet_id     = aws_subnet.public_subnet.id
 
   tags = {
@@ -88,7 +87,7 @@ resource "aws_route_table" "node-rt" {
 }
 
 resource "aws_route_table_association" "public_route_assc" {
-  subnet_id      = element(aws_subnet.public_subnet.*.id, count.index)
+  subnet_id      = aws_subnet.public_subnet.id
   route_table_id = aws_route_table.public-rt.id
 }
 
